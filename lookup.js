@@ -1,4 +1,3 @@
-// ── Constants (must be first) ───────────────────────────────────
 // ── CONSTANTS ────────────────────────────────────────────────────────────────
 const HOURS  = Array.from({length:24},(_,i)=>i);
 const YEARS  = [0,5,10,15,20];
@@ -47,84 +46,58 @@ const HARM={
 
 const HR_LABELS = HOURS.map(h=>h%3===0?h+':00':'');
 
-// State
+// ── MODEL MATHS ───────────────────────────────────────────────────────────────
 let activePathways = new Set(PATHS);
 let charts = {};
 
-/* ── LOOKUP ENGINE v9 ─────────────────────────────────────────────
-   Reads pre-computed outputs.json. No live model runs in browser.
-   ──────────────────────────────────────────────────────────────── */
-let DB = null;
-
-function nearest(arr, v) {
-  return arr.reduce((a,b) => Math.abs(b-v)<Math.abs(a-v)?b:a);
+function P() {
+  const h0  = +document.getElementById('sl-h0').value;
+  // Note: ringPeak() now uses the zones[] array for HH/tier composition.
+  // Total HH derived from zones[] array; zone A/B/C sliders update zones[] directly.
+  const lam = +document.getElementById('sl-lam').value;
+  // S₀ = λ × (24/H₀)
+  // At H₀=6.6 h, λ=1: S₀=3.636 (PeopleSuN empirical baseline for Nigerian urban feeders)
+  // At H₀=20 h (NERC Band A), λ=1: S₀=1.20 — delta unlocked is much smaller
+  // At H₀=23 h (near-continuous), λ=1: S₀=1.043 — near-zero delta
+  // S₀ is floored at 1.0: a feeder with 24 h/day supply has no suppressed demand to unlock.
+  // Note: at high H₀ (>16 h), λ>1.1 is physically implausible — households with near-continuous
+  // supply have already acquired most appliances they would buy under reliable supply.
+  const Sprop = 24 / h0;          // proportional base (what 24-hour supply unlocks vs H0)
+  const S     = Math.max(1.0, lam * Sprop);  // floored at 1.0
+  return {
+    hh: zones.reduce((s,z)=>s+z.hh,0),
+    h0,
+    lam,
+    S,
+    Sprop,
+    cap:+document.getElementById('sl-cap').value,
+    cf: +document.getElementById('sl-cf').value,
+    gp: +document.getElementById('sl-gp').value,
+    season: document.getElementById('sl-season').value,  // 'dry'|'harm'|'wet'
+    year:  +document.getElementById('sl-year').value,
+  };
 }
 
-function lookupScalar(h0, cf, pw, yr) {
-  const h0n=nearest(DB.meta.h0_vals,h0),
-        cfn=nearest(DB.meta.cf_vals,cf),
-        yrn=nearest(DB.meta.years,yr);
-  const row = DB.scalar.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw&&r.yr===yrn);
-  return row || DB.scalar.find(r=>r.pw===pw&&r.yr===yrn) || DB.scalar[0];
+function kWperHH(tier,cf,gp,S){
+  // admd: calibrated to simulator Year 0 outputs (paper Table 2)
+  // Zone A: 1.88 kW/HH, Zone B: 1.465 kW/HH, Zone C: 0.85 kW/HH
+  // v16 ADMD: 12-appliance portfolio calibrated to Nigerian evidence
+  // Zone A: 2.00 kW/HH (+0.12), Zone B: 1.526 kW/HH (+0.061), Zone C: 0.862 kW/HH (+0.012)
+  // Source: Uyigue et al. 2015 (Abuja end-use); BusinessDay/TNS 2013; Olaniyan et al. 2018
+  // kW ratings: Lighting 0.08, Fans 0.065, Pump 0.75, WashMach 0.45 (Nigerian-specific evidence)
+  // MTF 5 added for zone calibration configuration
+  const admd={1:2.55, 2:1.934, 3:1.462, 4:0.810};
+  // btmF: BTM fraction unchanged (new appliances are organic load, not BTM)
+  const btmF={1:0.72, 2:0.617, 3:0.526, 4:0.318};
+  const g=gp/100;
+  // BTM component scales with generator penetration (stops netting when grid reliable)
+  // Organic component scales with supply availability scaling S
+  return (admd[tier]*btmF[tier]*g + admd[tier]*(1-btmF[tier])*(S/3.64))*(cf/0.75);
 }
 
-function lookupDiurnal(h0, season, yr, pw) {
-  const h0n=nearest([2,4,6.6,8,10,12,16,20],h0),
-        yrn=nearest([0,5,10,15,20],yr),
-        sea=season==='harm'?'harmattan':season;
-  const row = DB.diurnal.find(r=>r.h0===h0n&&r.season===sea&&r.yr===yrn&&r.pw===pw);
-  return row ? row.profile : DB.diurnal.find(r=>r.pw===pw).profile;
-}
+// ── ADVANCED CONFIGURATION STATE ─────────────────────────────────────────────
 
-function lookupTraj(h0, cf, pw) {
-  const h0n=nearest([4,6.6,8,10,14,20],h0),
-        cfn=nearest([0.60,0.75,0.85],cf);
-  const row = DB.trajectory.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw);
-  return row ? row.traj : DB.trajectory.find(r=>r.pw===pw).traj;
-}
-
-function lookupZone(hhA,hhB,hhC) {
-  const hAn=nearest(DB.meta.hhA_vals,hhA),
-        hBn=nearest(DB.meta.hhB_vals,hhB),
-        hCn=nearest(DB.meta.hhC_vals,hhC);
-  return DB.zones.find(r=>r.hhA===hAn&&r.hhB===hBn&&r.hhC===hCn) || DB.zones[0];
-}
-
-// ── Lookup-backed compute functions (override engine versions) ───
-function ringPeak(p, pw, yr) {
-  if(!DB) return 7.88;
-  const row = lookupScalar(p.h0, p.cf, pw||'CT', yr||0);
-  const hhScale = ((p.hhA||1000)+(p.hhB||2000)+(p.hhC||1000)) / 4000;
-  const lamScale = 1 + ((p.lam||1)-1.0)*0.6;
-  const gpScale  = 0.40 + ((p.gp||100)/100)*0.60;
-  return +(row.peak * hhScale * lamScale * gpScale).toFixed(2);
-}
-
-function btmFrac(p, pw, yr) {
-  if(!DB) return 0.63;
-  const row = lookupScalar(p.h0, p.cf, pw||'CT', yr||0);
-  const gpScale = 0.40 + ((p.gp||100)/100)*0.60;
-  return +Math.min(0.90, row.btm * gpScale).toFixed(3);
-}
-
-function trajPeak(path, year, p) {
-  if(!DB) return 7.88;
-  const traj = lookupTraj(p.h0, p.cf, path.toUpperCase());
-  const yrn  = Math.min(20, Math.max(0, Math.round(year)));
-  const hhScale  = ((p.hhA||1000)+(p.hhB||2000)+(p.hhC||1000)) / 4000;
-  const lamScale = 1 + ((p.lam||1)-1.0)*0.6;
-  const gpScale  = 0.40 + ((p.gp||100)/100)*0.60;
-  return +(traj[yrn] * hhScale * lamScale * gpScale).toFixed(2);
-}
-
-function pathMult(path, year) {
-  if(!DB) return 1;
-  const traj = lookupTraj(6.6, 0.75, path.toUpperCase());
-  return traj[Math.min(20,Math.round(year))] / traj[0];
-}
-
-
-// ── Engine body (rendering + UI) ────────────────────────────────
+// Default zones: the three-zone mixed 11kV distribution feeder
 const DEFAULT_ZONES = [
   {name:'Zone A (MTF 5)', hh:1000, tier:1},  // MTF 5 — GRA/premium estate
   {name:'Zone B (MTF 4)', hh:2000, tier:2},  // MTF 4 — upper-middle residential
@@ -1761,8 +1734,88 @@ function buildAppliancePanel(){
 // ── INIT ──────────────────────────────────────────────────────────────────────
 buildPWList();
 buildBTMPanel();
-updateAll();
-
+// updateAll() — replaced by fetch bootstrap below
 document.querySelectorAll('input[type=range],select').forEach(el=>el.addEventListener('input',updateAll));
 // Note: sl-S removed; S is now derived from sl-h0 and sl-lam
 document.getElementById('footer-ts').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+
+// ═══════════════════════════════════════════════════════════════════
+// LOOKUP ENGINE — overrides the live-compute functions above.
+// All demand outputs now come from outputs.json (pre-computed).
+// ═══════════════════════════════════════════════════════════════════
+let DB = null;
+
+function nearest(arr, v) {
+  return arr.reduce((a,b) => Math.abs(b-v)<Math.abs(a-v)?b:a);
+}
+function lookupScalar(h0, cf, pw, yr) {
+  if(!DB) return {peak:7.88, btm:0.63, co2:2000};
+  const h0n=nearest(DB.meta.h0_vals,h0),
+        cfn=nearest(DB.meta.cf_vals,cf),
+        yrn=nearest(DB.meta.years,yr);
+  const row = DB.scalar.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw&&r.yr===yrn);
+  return row || DB.scalar.find(r=>r.pw===pw&&r.yr===yrn) || DB.scalar[0];
+}
+function lookupTraj(h0, cf, pw) {
+  if(!DB) return Array(21).fill(7.88);
+  const h0n=nearest([4,6.6,8,10,14,20],h0),
+        cfn=nearest([0.60,0.75,0.85],cf);
+  const row = DB.trajectory.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw);
+  return row ? row.traj : DB.trajectory.find(r=>r.pw===pw).traj;
+}
+function lookupDiurnal(h0, season, yr, pw) {
+  if(!DB) return Array(24).fill(0);
+  const h0n=nearest([2,4,6.6,8,10,12,16,20],h0),
+        yrn=nearest([0,5,10,15,20],yr),
+        sea=season==='harm'?'harmattan':season;
+  const row = DB.diurnal.find(r=>r.h0===h0n&&r.season===sea&&r.yr===yrn&&r.pw===pw);
+  return row ? row.profile : DB.diurnal.find(r=>r.pw===pw).profile;
+}
+
+// Override ringPeak — was a live compute, now a lookup + scaling
+function ringPeak(p, pw, yr) {
+  const row = lookupScalar(p.h0, p.cf, (pw||'ct').toUpperCase(), yr||0);
+  const hhScale  = (zones.reduce((s,z)=>s+z.hh,0)) / 4000;
+  const lamScale = 1 + ((p.lam||1)-1)*0.6;
+  const gpScale  = 0.40 + ((p.gp||100)/100)*0.60;
+  return +(row.peak * hhScale * lamScale * gpScale).toFixed(2);
+}
+// Override trajPeak — was ringPeak * pathMult, now from trajectory table
+function trajPeak(path, year, p) {
+  const traj = lookupTraj(p.h0, p.cf, path.toUpperCase());
+  const yrn  = Math.min(20, Math.max(0, Math.round(year)));
+  const hhScale  = (zones.reduce((s,z)=>s+z.hh,0)) / 4000;
+  const lamScale = 1 + ((p.lam||1)-1)*0.6;
+  const gpScale  = 0.40 + ((p.gp||100)/100)*0.60;
+  return +(traj[yrn] * hhScale * lamScale * gpScale).toFixed(2);
+}
+// Override pathMult — derive from trajectory table
+function pathMult(path, year) {
+  if(!DB) return 1;
+  const traj = lookupTraj(6.6, 0.75, path.toUpperCase());
+  return traj[Math.min(20,Math.round(year))] / traj[0];
+}
+// Override btmMW — use lookup btm fraction
+function btmMW(peak, gp, h0) {
+  const p = P();
+  const row = lookupScalar(p.h0, p.cf, 'CT', 0);
+  const gpScale = 0.40 + ((gp||100)/100)*0.60;
+  return +(peak * Math.min(0.90, row.btm * gpScale)).toFixed(2);
+}
+
+
+// ── Fetch outputs.json then start the dashboard ──────────────────
+fetch('outputs.json')
+  .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+  .then(data=>{
+    DB=data;
+    console.log('[lookup] outputs.json loaded — '+data.scalar.length+' scalar rows');
+    updateAll();
+  })
+  .catch(e=>{
+    console.error('[lookup] Failed to load outputs.json:',e);
+    document.body.insertAdjacentHTML('afterbegin',
+      '<div style="position:fixed;top:0;left:0;right:0;background:#f85149;'+
+      'color:#fff;padding:12px 20px;font-family:monospace;font-size:13px;z-index:9999">'+
+      '⚠ outputs.json not found. Ensure the file is uploaded to your repository.</div>');
+  });

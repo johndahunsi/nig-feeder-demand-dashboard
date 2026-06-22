@@ -1,5 +1,5 @@
 /* ── LOOKUP ENGINE ─────────────────────────────────────────────
-   Reads pre-computed outputs.json.
+   Reads pre-computed outputs.json
    ──────────────────────────────────────────────────────────────── */
 let DB = null;
 
@@ -82,6 +82,59 @@ function trajPeak(pw, yr, p) {
 function btmFracT(pw, yr, p) { return btmFrac(p, pw, yr); }
 function peakMWT(pw, yr, p)   { return trajPeak(pw, yr, p); }
 
+
+// ── Constants and chart defaults (from engine.js) ─────────────
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
+const HOURS  = Array.from({length:24},(_,i)=>i);
+const YEARS  = [0,5,10,15,20];
+const PATHS  = ['ct','us','ra','sd','pt'];
+const PNAMES = {ct:'Consumer Transformation',us:'High Growth',ra:'Moderate Austerity',sd:'Debt-Service Floor',pt:'Prosumer Transition'};
+const PCOLORS= {ct:'#58a6ff',us:'#f85149',ra:'#3fb950',sd:'#8b949e',pt:'#bc8cff'};
+const PDASH  = {ct:[],us:[],ra:[6,3],sd:[3,3],pt:[8,3]};
+
+// Chart.js defaults for dark theme
+Chart.defaults.color = '#8b949e';
+Chart.defaults.borderColor = '#30363d';
+Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+Chart.defaults.font.size = 10;
+
+const GC = '#30363d'; // grid colour
+const baseOpts = (yTitle='MW') => ({
+  responsive:true, maintainAspectRatio:false,
+  plugins:{ legend:{display:false} },
+  scales:{
+    x:{ grid:{color:GC}, ticks:{color:'#8b949e'} },
+    y:{ grid:{color:GC}, ticks:{color:'#8b949e'}, title:{display:!!yTitle,text:yTitle,color:'#8b949e',font:{size:10}} }
+  }
+});
+
+// ── DIURNAL DATA ─────────────────────────────────────────────────────────────
+const DRY={
+  A:[.65,.60,.60,.62,.64,.68,.75,1.00,1.45,1.60,1.62,1.55,1.50,1.55,1.58,1.60,1.70,1.78,1.88,1.85,1.75,1.55,1.30,.95],
+  B:[.90,.85,.85,.87,.88,.95,1.05,1.40,1.90,2.30,2.45,2.40,2.35,2.40,2.45,2.50,2.70,2.85,2.93,2.88,2.65,2.30,1.80,1.30],
+  C:[.32,.30,.30,.30,.31,.33,.40,.55,.65,.72,.75,.74,.72,.73,.74,.75,.78,.82,.85,.83,.78,.70,.58,.43]
+};
+const WET={
+  A:[.55,.52,.52,.53,.54,.58,.65,.88,1.20,1.35,1.38,1.32,1.28,1.32,1.35,1.38,1.45,1.55,1.62,1.58,1.50,1.30,1.10,.80],
+  B:[.78,.74,.74,.75,.76,.82,.92,1.20,1.60,1.95,2.08,2.04,2.00,2.04,2.08,2.12,2.28,2.42,2.50,2.45,2.25,1.95,1.52,1.10],
+  C:[.27,.26,.26,.26,.27,.28,.34,.47,.55,.61,.64,.63,.61,.62,.63,.64,.66,.69,.72,.71,.66,.60,.50,.37]
+};
+const HARM={
+  // Harmattan season (Nov–Feb): cooler than hot-dry (CDH 76% of Mar–Apr),
+  // reduced solar (tau_dust=0.75 → 75% irradiance), less BESS discharge.
+  // AC demand: ~76% of hot-dry. Evening slightly elevated vs AC-only scaling
+  // due to reduced BESS offset (less solar charging).
+  // Sandcrete nocturnal effect reduced: cooler external walls.
+  A:[0.53,0.50,0.51,0.54,0.57,0.62,0.69,0.93,1.36,1.51,1.54,1.47,1.42,1.46,1.48,1.49,1.56,1.68,1.79,1.76,1.65,1.45,1.21,0.86],
+  B:[0.73,0.71,0.73,0.76,0.79,0.86,0.96,1.30,1.79,2.17,2.32,2.28,2.23,2.27,2.30,2.33,2.48,2.69,2.80,2.74,2.50,2.16,1.67,1.18],
+  C:[0.26,0.25,0.26,0.26,0.28,0.30,0.37,0.51,0.61,0.68,0.71,0.70,0.68,0.69,0.70,0.70,0.72,0.78,0.81,0.79,0.74,0.66,0.54,0.39],
+};
+
+const HR_LABELS = HOURS.map(h=>h%3===0?h+':00':'');
+
+// State
+let activePathways = new Set(PATHS);
+let charts = {};
 
 // ── Chart rendering and UI (from engine.js) ─────────────────
 const DEFAULT_ZONES = [

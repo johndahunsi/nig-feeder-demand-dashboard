@@ -912,6 +912,886 @@ select:focus{border-color:var(--accent)}
 <!-- Scripts at bottom of body — guarantees DOM and CDN libs are ready -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="lookup.js?v=4"></script>
+</body>
+</html>.ctrl{margin-bottom:12px}
+.ctrl label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:4px}
+.ctrl label span{font-family:'IBM Plex Mono',monospace;color:var(--accent);font-size:10px}
+input[type=range]{width:100%;height:4px;-webkit-appearance:none;background:var(--surface3);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--accent);cursor:pointer}
+select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:5px 8px;font-size:11px;border-radius:3px;outline:none;cursor:pointer;font-family:'IBM Plex Sans',sans-serif}
+select:focus{border-color:var(--accent)}
+
+.pw-toggle{display:flex;align-items:center;gap:7px;cursor:pointer;padding:5px 7px;border-radius:3px;border:1px solid transparent;font-size:11px;margin-bottom:4px;transition:background .12s}
+.pw-toggle:hover{background:var(--surface2)}
+.pw-toggle.active{border-color:var(--border);background:var(--surface2)}
+.pw-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.pw-name{flex:1;color:var(--text)}
+.pw-val{font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--muted)}
+
+/* main */
+.main{padding:18px 22px;overflow-y:auto;display:flex;flex-direction:column;gap:18px}
+
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:12px 14px}
+.kpi-lbl{font-size:9px;color:var(--muted);font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;text-transform:uppercase;margin-bottom:5px}
+.kpi-val{font-size:20px;font-weight:600;font-family:'IBM Plex Mono',monospace;line-height:1;margin-bottom:3px}
+.kpi-sub{font-size:10px;color:var(--muted)}
+.kpi-r .kpi-val{color:var(--red)}
+.kpi-o .kpi-val{color:var(--orange)}
+.kpi-g .kpi-val{color:var(--green)}
+.kpi-t .kpi-val{color:var(--teal)}
+.kpi-a .kpi-val{color:var(--accent)}
+
+.tabs{display:flex;gap:1px;border-bottom:1px solid var(--border)}
+.tab-btn{padding:7px 14px;font-size:12px;color:var(--muted);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;font-family:'IBM Plex Sans',sans-serif}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+
+.panel{display:none}
+.panel.active{display:flex;flex-direction:column;gap:16px}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:16px 18px}
+.card-ttl{font-size:10px;font-weight:600;color:var(--muted);font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px}
+.card-sub{font-size:11px;color:var(--muted);margin-bottom:13px}
+.chart-wrap{position:relative;width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+
+.leg-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px}
+.leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted)}
+.leg-ln{width:18px;height:2px;border-radius:1px}
+
+.insight{padding:10px 14px;border-left:3px solid var(--accent);background:rgba(88,166,255,.06);border-radius:0 4px 4px 0;font-size:11px;color:var(--muted);line-height:1.7}
+.insight b{color:var(--text)}
+
+/* tornado */
+.torn-row{display:grid;grid-template-columns:125px 1fr 65px;align-items:center;gap:8px;margin-bottom:8px}
+.torn-lbl{font-size:10px;color:var(--muted);text-align:right}
+.torn-track{background:var(--surface2);border-radius:2px;height:20px;overflow:hidden}
+.torn-bar{height:100%;background:var(--accent);border-radius:2px;display:flex;align-items:center;padding:0 6px}
+.torn-txt{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--bg);white-space:nowrap}
+.torn-rng{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--muted)}
+
+/* heatmap */
+.hm-grid{display:grid;gap:4px}
+.hm-cell{border-radius:3px;padding:7px 3px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600}
+.hm-ax{font-size:9px;color:var(--muted);text-align:center;font-family:'IBM Plex Mono',monospace;display:flex;align-items:center;justify-content:center}
+
+/* decomp table */
+.dtable{width:100%;border-collapse:collapse}
+.dtable th{font-size:9px;font-family:'IBM Plex Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:7px 10px;border-bottom:1px solid var(--border);text-align:left}
+.dtable td{padding:8px 10px;font-size:11px;border-bottom:1px solid var(--surface2);font-family:'IBM Plex Mono',monospace}
+.dtable tr:last-child td{font-weight:600;border-bottom:none;color:var(--text)}
+
+/* btm profiles */
+.prof-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.prof-card{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:11px 13px}
+.prof-id{font-size:18px;font-weight:600;font-family:'IBM Plex Mono',monospace;color:var(--accent);margin-bottom:3px}
+.prof-name{font-size:11px;font-weight:500;margin-bottom:2px}
+.prof-desc{font-size:10px;color:var(--muted);line-height:1.5}
+.prof-tag{margin-top:7px;font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 6px;border-radius:2px;display:inline-block}
+
+.footer{border-top:1px solid var(--border);padding:10px 28px;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>"></head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Nigeria 11 kV Distribution Demand Model</h1>
+    <p>11 kV distribution feeder · unsuppressed demand · 4,000 HH · 20-year planning horizon</p>
+    <div class="badges">
+      <span class="badge badge-b">DARES interconnected mini-grid</span>
+      <span class="badge badge-g">PoA Generator Displacement</span>
+      <span class="badge badge-o">InfraCredit / Zafiri</span>
+      <span class="badge badge-p">IEEE PowerAfrica 2026</span>
+    </div>
+  </div>
+  <div>
+    <div class="hdr-peak" id="hdr-peak" style="color:var(--red)">7.88 MW</div>
+    <div class="hdr-sub">Day 1 ring-aggregate peak</div>
+    <div class="hdr-sub" id="hdr-sub2">vs 5.00 MW feeder rating · v9 · 3 zones</div>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <div class="sb-sec">
+      <div class="sb-lbl">Feeder Parameters</div>
+
+      <div class="ctrl">
+        <label>Zone A households (MTF 5) <span id="lbl-hhA">1,000</span></label>
+        <input type="range" id="sl-hhA" min="0" max="6000" step="100" value="1000"
+          oninput="zones[0].hh=+this.value;document.getElementById('lbl-hhA').textContent=(+this.value).toLocaleString();document.getElementById('lbl-hh').textContent=zones.reduce((s,z)=>s+z.hh,0).toLocaleString();updateAll()">
+        <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.5">
+          Premium residential (GRA / government reserved area). High BTM generator penetration (72%).
+          High WFH and SME daytime load. Sets solar array sizing.
+        </div>
+      </div>
+
+      <div class="ctrl">
+        <label>Zone B households (MTF 4) <span id="lbl-hhB">2,000</span></label>
+        <input type="range" id="sl-hhB" min="0" max="6000" step="100" value="2000"
+          oninput="zones[1].hh=+this.value;document.getElementById('lbl-hhB').textContent=(+this.value).toLocaleString();document.getElementById('lbl-hh').textContent=zones.reduce((s,z)=>s+z.hh,0).toLocaleString();updateAll()">
+        <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.5">
+          Upper-middle residential. Mixed generator and solar ownership (62% BTM). Largest zone in the paper archetype.
+        </div>
+      </div>
+
+      <div class="ctrl">
+        <label>Zone C households (MTF 3) <span id="lbl-hhC">1,000</span></label>
+        <input type="range" id="sl-hhC" min="0" max="6000" step="100" value="1000"
+          oninput="zones[2].hh=+this.value;document.getElementById('lbl-hhC').textContent=(+this.value).toLocaleString();document.getElementById('lbl-hh').textContent=zones.reduce((s,z)=>s+z.hh,0).toLocaleString();updateAll()">
+        <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.5">
+          Lower-middle urban. Mainly sandcrete construction. Lower BTM penetration (53%).
+          Sandcrete thermal tail drives overnight BESS requirement.
+        </div>
+      </div>
+
+      <div style="font-size:9px;color:var(--muted);margin-bottom:10px;font-family:'IBM Plex Mono',monospace;padding:5px 7px;background:var(--surface2);border-radius:3px;border:1px solid var(--border)">
+        Total HH: <span id="lbl-hh" style="color:var(--accent);font-weight:600">4,000</span>
+        &nbsp;·&nbsp; All zone sliders affect all charts in real time.
+      </div>
+
+      <div class="ctrl">
+        <label>Simultaneous supply H₀ (feeder head) <span id="lbl-h0">6.6 h/day</span></label>
+        <input type="range" id="sl-h0" min="2" max="23" step="0.2" value="6.6">
+        <div style="font-size:9px;color:var(--muted);margin-top:4px;font-family:'IBM Plex Mono',monospace;line-height:1.6">
+          Derived S₀ = <span id="lbl-S-derived">3.64</span> × λ &nbsp;
+          <span id="lbl-S-eff" style="color:var(--accent);font-weight:600">= 3.64</span>
+        </div>
+        <div style="font-size:9px;color:var(--muted);margin-top:3px;font-family:'IBM Plex Mono',monospace" id="lbl-nerc-band"></div>
+        <div style="font-size:9px;color:var(--muted);margin-top:5px;line-height:1.6;border-top:1px solid var(--border);padding-top:5px">
+          <b style="color:var(--text)">H<sub>grid,0</sub> is the measured value at the feeder head</b> — distinct from the regulatory-nominal DisCo band allocation.
+          It is the average daily duration of simultaneous whole-feeder energisation, measured where voltage exceeds threshold across all sections simultaneously.
+          Average over a minimum 12-week habit-formation window; a full seasonal cycle is preferred.
+          DisCo band allocations may reflect sectionalised rather than ring-wide supply and overstate the hours household coping portfolios were calibrated against.
+          PeopleSuN national urban average = 6.6 h/day (conservative pre-transition baseline).
+        </div>
+      </div>
+      <div class="ctrl">
+        <label>Feeder rating <span id="lbl-cap">5.0 MW</span></label>
+        <input type="range" id="sl-cap" min="2" max="12" step="0.5" value="5">
+        <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.5">
+          The nameplate thermal rating of the 11&nbsp;kV feeder. The standard Nigerian urban
+          distribution feeder is rated at 5&nbsp;MW. All charts update the capacity line in
+          real time when you change this value.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sb-sec">
+      <div class="sb-lbl">Uncertainty Parameters</div>
+      <div class="ctrl">
+        <label>Coincidence factor CF <span id="lbl-cf">0.75</span></label>
+        <input type="range" id="sl-cf" min="0.50" max="0.85" step="0.01" value="0.75">
+        <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.5">
+          The ratio of the simultaneous feeder peak to the arithmetic sum of individual
+          household peaks. Reflects demand diversity across thousands of connections.
+          Paper central value: 0.75. Monte Carlo range: 0.50–0.90. Higher CF means less
+          diversity — all households peak at the same time.
+        </div>
+      </div>
+      <div class="ctrl">
+        <label>Latent demand λ <span id="lbl-lam">1.00×</span></label>
+        <input type="range" id="sl-lam" min="1.00" max="1.50" step="0.02" value="1.00">
+        <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.5" id="lbl-lam-note">
+          λ&nbsp;=&nbsp;1: demand scales proportionally with supply hours only.<br>
+          λ&nbsp;&gt;&nbsp;1: additional latent demand from reliability-driven appliance acquisition
+          (households buy appliances they could not use under rationing).
+          Capped at 1.3 for Band&nbsp;E feeders (H₀&nbsp;&lt;&nbsp;8&nbsp;h/day) based on observed
+          unsuppressed-to-suppressed consumption ratios in the PeopleSuN Band&nbsp;E cohort.
+          Implausible above 1.1 when H₀&nbsp;&gt;&nbsp;14&nbsp;h/day.
+        </div>
+      </div>
+      <div class="ctrl">
+        <label>Generator penetration γ <span id="lbl-gp">100%</span></label>
+        <input type="range" id="sl-gp" min="40" max="100" step="5" value="100">
+        <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.5">
+          The fraction of generator-owning households that currently have working generators.
+          At 100% all BTM profiles are fully active. Reducing this scales down the BTM
+          migration component — modelling a feeder where generator retirement is already
+          partially complete. Affects CO₂ displacement estimates and BTM decomposition.
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sb-lbl">Diurnal Controls</div>
+      <div class="ctrl">
+        <label>Season <span style="font-size:9px;color:var(--muted)">(Diurnal Profile tab)</span></label>
+        <select id="sl-season">
+          <option value="dry">Hot-dry (Mar–Apr)</option>
+          <option value="harm">Harmattan (Nov–Feb)</option>
+          <option value="wet">Wet (Jun–Sep)</option>
+        </select>
+        <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.5">
+          Controls the hourly profile shape on the Diurnal Profiles and Profile Explorer tabs.
+          The 7.88&nbsp;MW design-day peak is the worst-case hour on the hottest hot-dry day.
+          Seasonal-average evening peaks are lower: 5.66&nbsp;MW (hot-dry), 5.40&nbsp;MW
+          (Harmattan), 4.84&nbsp;MW (wet).
+        </div>
+      </div>
+      <div class="ctrl">
+        <label>Concession year <span style="font-size:9px;color:var(--muted)">(Diurnal tabs)</span></label>
+        <select id="sl-year">
+          <option value="0">Year 0</option>
+          <option value="5">Year 5</option>
+          <option value="10">Year 10</option>
+          <option value="20">Year 20</option>
+        </select>
+        <div style="font-size:9px;color:var(--muted);margin-top:3px;line-height:1.5">
+          Sets the planning year for the Diurnal Profiles and Profile Explorer tabs.
+          Does not affect the 20-Year Trajectory tab, which shows the full concession
+          horizon simultaneously.
+        </div>
+      </div>
+    </div>
+
+    <div class="sb-sec">
+      <div class="sb-lbl">Planning Pathways · <span id="pw-year-lbl" style="color:var(--accent)">Year 0</span></div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:8px;font-family:'IBM Plex Mono',monospace">Peak MW at selected concession year</div>
+      <div id="pw-list"></div>
+    </div>
+
+    <!-- ── ADVANCED CONFIGURATION (premium tier) ──────────────────────── -->
+    <div class="sb-sec">
+      <div class="sb-lbl" style="cursor:pointer;user-select:none;display:flex;justify-content:space-between;align-items:center"
+           onclick="toggleAdvanced()">
+        <span>⚙ Advanced Configuration</span>
+        <span id="adv-arrow" style="font-size:10px;transition:transform .2s">▶</span>
+      </div>
+      <div id="adv-panel" style="display:none;margin-top:8px">
+
+        <!-- Zone Builder -->
+        <div style="font-size:9px;font-weight:600;color:var(--text);margin-bottom:6px;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;text-transform:uppercase">
+          Zone Composition
+        </div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">
+          Add or remove zones. Each zone has a name, household count, and MTF tier.
+          The three-zone default models a single mixed 11kV feeder.
+          Up to 6 zones supported.
+        </div>
+        <div id="zone-rows" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
+        <div style="display:flex;gap:6px">
+          <button onclick="addZone()" style="flex:1;font-size:9px;padding:4px 0;background:var(--surface2);border:1px solid var(--border);color:var(--accent);border-radius:3px;cursor:pointer">+ Add zone</button>
+          <button onclick="resetZones()" style="flex:1;font-size:9px;padding:4px 0;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:3px;cursor:pointer">Reset default</button>
+        </div>
+
+        <div style="height:1px;background:var(--border);margin:12px 0"></div>
+
+        <!-- Appliance kW Sliders -->
+        <div style="font-size:9px;font-weight:600;color:var(--text);margin-bottom:6px;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;text-transform:uppercase">
+          Appliance kW Ratings
+        </div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5">
+          Override default ratings with local market data.
+          Affects ring peak and appliance contribution chart.
+        </div>
+        <div id="app-sliders" style="display:flex;flex-direction:column;gap:8px"></div>
+        <button onclick="resetAppliances()" style="width:100%;margin-top:8px;font-size:9px;padding:4px 0;background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:3px;cursor:pointer">Reset defaults</button>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- KPIs -->
+    <div class="kpi-row">
+      <div class="kpi kpi-r">
+        <div class="kpi-lbl">Day 1 Peak</div>
+        <div class="kpi-val" id="k-peak">7.88 MW</div>
+        <div class="kpi-sub" id="k-peak-sub">158% of 5.0 MW rating · Year 0</div>
+      </div>
+      <div class="kpi kpi-o">
+        <div class="kpi-lbl">BTM Migration</div>
+        <div class="kpi-val" id="k-btm">4.99 MW</div>
+        <div class="kpi-sub">formerly off-grid · price-inelastic</div>
+      </div>
+      <div class="kpi kpi-r">
+        <div class="kpi-lbl">Embedded Gen Needed</div>
+        <div class="kpi-val" id="k-gen">+2.88 MW</div>
+        <div class="kpi-sub">Day 1 above feeder rating</div>
+      </div>
+      <div class="kpi kpi-t">
+        <div class="kpi-lbl">CO₂ Displaced</div>
+        <div class="kpi-val" id="k-co2">2,000 t</div>
+        <div class="kpi-sub" id="k-co2-sub">$16k–$30k / yr VCM</div>
+      </div>
+      <div class="kpi kpi-a">
+        <div class="kpi-lbl">Year 20 Spread</div>
+        <div class="kpi-val" id="k-spread">93%</div>
+        <div class="kpi-sub">High Growth vs Debt-Service Floor</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('trajectory')">20-Year Trajectory</button>
+      <button class="tab-btn" onclick="switchTab('profile')">Profile Explorer</button>
+      <button class="tab-btn" onclick="switchTab('diurnal')">Diurnal Profiles</button>
+      <button class="tab-btn" onclick="switchTab('decomp')">Demand Decomposition</button>
+      <button class="tab-btn" onclick="switchTab('sensitivity')">Sensitivity</button>
+      <button class="tab-btn" onclick="switchTab('btm')">BTM Taxonomy</button>
+      <button class="tab-btn" onclick="switchTab('carbon')">Carbon Credits</button>
+      <button class="tab-btn" onclick="switchTab('tariff')">Tariff Sensitivity</button>
+      <button class="tab-btn" onclick="switchTab('appliances')">Appliance Portfolio</button>
+      <button class="tab-btn" onclick="switchTab('about')">About This Model</button>
+    </div>
+
+    <!-- TRAJECTORY -->
+    <div class="panel active" id="panel-trajectory">
+      <div class="card">
+        <div class="card-ttl">Ring-aggregate unsuppressed peak · 5 planning pathways</div>
+        <div class="card-sub">All pathways share Year 0 · dashed = feeder capacity · grey band = parametric uncertainty</div>
+        <div class="leg-row" id="traj-legend"></div>
+        <div class="chart-wrap" style="height:320px"><canvas id="ch-traj"></canvas></div>
+      </div>
+      <div class="two">
+        <div class="card">
+          <div class="card-ttl">Year 5 snapshot by pathway</div>
+          <div class="card-sub">MW · orange dashed = feeder rating</div>
+          <div class="chart-wrap" style="height:190px"><canvas id="ch-y5"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Year 20 planning envelope</div>
+          <div class="card-sub">MW · capacity line shown</div>
+          <div class="chart-wrap" style="height:190px"><canvas id="ch-y20"></canvas></div>
+        </div>
+      </div>
+      <div class="insight" id="ins-traj"></div>
+    </div>
+
+    <!-- PROFILE EXPLORER -->
+    <div class="panel" id="panel-profile">
+      <div class="card">
+        <div class="card-ttl">24-hour demand profile explorer</div>
+        <div class="card-sub">Select any pathway, year (0–20), season and zone combination — profiles scale to your sidebar parameters</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">
+          <div class="ctrl" style="margin:0">
+            <label style="font-size:11px;color:var(--muted);margin-bottom:5px;display:block">Pathway</label>
+            <select id="pe-path" onchange="updateProfileExplorer()">
+              <option value="ct">Consumer Transformation</option>
+              <option value="us">High Growth</option>
+              <option value="ra">Moderate Austerity</option>
+              <option value="sd">Debt-Service Floor</option>
+              <option value="pt">Prosumer Transition</option>
+            </select>
+          </div>
+          <div class="ctrl" style="margin:0">
+            <label style="font-size:11px;color:var(--muted);margin-bottom:5px;display:block">Year <span id="pe-yr-lbl" style="color:var(--accent);font-family:'IBM Plex Mono',monospace">0</span></label>
+            <input type="range" id="pe-year" min="0" max="20" step="1" value="0" oninput="document.getElementById('pe-yr-lbl').textContent=this.value;updateProfileExplorer()">
+          </div>
+          <div class="ctrl" style="margin:0">
+            <label style="font-size:11px;color:var(--muted);margin-bottom:5px;display:block">Season</label>
+            <select id="pe-season" onchange="updateProfileExplorer()">
+              <option value="dry">Hot-dry (Mar–Apr)</option>
+              <option value="harm">Harmattan (Nov–Feb)</option>
+              <option value="wet">Wet (Jun–Sep)</option>
+            </select>
+          </div>
+          <div class="ctrl" style="margin:0">
+            <label style="font-size:11px;color:var(--muted);margin-bottom:5px;display:block">Zones shown</label>
+            <select id="pe-zones" onchange="updateProfileExplorer()">
+              <option value="all">All zones + ring</option>
+              <option value="ring">Ring aggregate only</option>
+              <option value="A">Zone A (MTF 5) only</option>
+              <option value="B">Zone B (MTF 4) only</option>
+              <option value="C">Zone C (MTF 3) only</option>
+              <option value="AB">Zones A + B</option>
+            </select>
+          </div>
+        </div>
+        <!-- Multi-pathway overlay toggle -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+          <span style="font-size:10px;color:var(--muted);font-family:'IBM Plex Mono',monospace">OVERLAY PATHWAYS:</span>
+          <span id="pe-overlay-ct"  class="pe-pw-btn active" onclick="toggleOverlay('ct')"  style="cursor:pointer;padding:2px 8px;border-radius:2px;font-size:10px;font-family:'IBM Plex Mono',monospace;border:1px solid #58a6ff;color:#58a6ff;background:rgba(88,166,255,.1)">Consumer Transf.</span>
+          <span id="pe-overlay-us"  class="pe-pw-btn"        onclick="toggleOverlay('us')"  style="cursor:pointer;padding:2px 8px;border-radius:2px;font-size:10px;font-family:'IBM Plex Mono',monospace;border:1px solid #30363d;color:#8b949e;background:transparent">High Growth</span>
+          <span id="pe-overlay-ra"  class="pe-pw-btn"        onclick="toggleOverlay('ra')"  style="cursor:pointer;padding:2px 8px;border-radius:2px;font-size:10px;font-family:'IBM Plex Mono',monospace;border:1px solid #30363d;color:#8b949e;background:transparent">Moderate Austerity</span>
+          <span id="pe-overlay-sd"  class="pe-pw-btn"        onclick="toggleOverlay('sd')"  style="cursor:pointer;padding:2px 8px;border-radius:2px;font-size:10px;font-family:'IBM Plex Mono',monospace;border:1px solid #30363d;color:#8b949e;background:transparent">Debt-Service Floor</span>
+          <span id="pe-overlay-pt"  class="pe-pw-btn"        onclick="toggleOverlay('pt')"  style="cursor:pointer;padding:2px 8px;border-radius:2px;font-size:10px;font-family:'IBM Plex Mono',monospace;border:1px solid #30363d;color:#8b949e;background:transparent">Prosumer Trans.</span>
+        </div>
+        <div class="leg-row" id="pe-legend"></div>
+        <div class="chart-wrap" style="height:320px"><canvas id="ch-pe-main"></canvas></div>
+      </div>
+      <!-- Year sweep: same pathway, all years -->
+      <div class="two">
+        <div class="card">
+          <div class="card-ttl">Year sweep · selected pathway · ring aggregate</div>
+          <div class="card-sub">Y0 → Y5 → Y10 → Y20 on same axes — demand shape evolution</div>
+          <div class="chart-wrap" style="height:220px"><canvas id="ch-pe-sweep"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Peak demand by hour · selected year</div>
+          <div class="card-sub">Hour of day vs MW — which hours cross feeder capacity</div>
+          <div class="chart-wrap" style="height:220px"><canvas id="ch-pe-bar"></canvas></div>
+        </div>
+      </div>
+      <div class="insight" id="ins-pe"></div>
+    </div>
+
+    <!-- DIURNAL (existing) -->
+    <div class="panel" id="panel-diurnal">
+      <div class="card">
+        <div class="card-ttl">Per-zone diurnal profiles</div>
+        <div class="card-sub">Zone A (MTF 5 GRA/estate) · Zone B (MTF 4 upper-mid) · Zone C (MTF 3 lower-mid) · Ring aggregate</div>
+        <div class="leg-row">
+          <span class="leg"><span class="leg-ln" style="background:#58a6ff"></span>Zone A</span>
+          <span class="leg"><span class="leg-ln" style="background:#d29922"></span>Zone B</span>
+          <span class="leg"><span class="leg-ln" style="background:#3fb950"></span>Zone C</span>
+          <span class="leg"><span class="leg-ln" style="background:#e6edf3;height:1px;border-bottom:2px dashed #e6edf3;background:transparent"></span>Ring total</span>
+          <span class="leg"><span class="leg-ln" style="background:#d29922;height:1px;border-bottom:1px dashed #d29922;background:transparent"></span>Feeder capacity</span>
+        </div>
+        <div class="chart-wrap" style="height:280px"><canvas id="ch-diurnal-zones"></canvas></div>
+      </div>
+      <div class="two">
+        <div class="card">
+          <div class="card-ttl">Dry vs wet season · Zone B</div>
+          <div class="card-sub">Sandcrete nocturnal elevation in dry season</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="ch-seasonal"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Year-on-year evolution · ring aggregate</div>
+          <div class="card-sub">Consumer Transformation pathway</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="ch-diurnal-yrs"></canvas></div>
+        </div>
+      </div>
+      <div class="insight"><b>WFH/SME daytime plateau (Zones A and B):</b> the sustained load between 09:00 and 17:00 reflects home-based businesses and post-COVID work-from-home occupancy (30–40% of upper-tier connections), a structural shift not captured in any pre-2020 demand model. This plateau determines solar capacity sizing. <b>Sandcrete nocturnal elevation:</b> wall-stored solar heat releases through the night, keeping T_air 8–10°C above outdoor temperature until 02:00–03:00 on dry-season days. Zone C (MTF 3 sandcrete, τ_wall=2.0h) shows the same nocturnal elevation as Zones A and B — wall-stored heat sustains indoor T 3–5°C above outdoor through 02:00, with 35% AC penetration active past midnight. All three zones now share the sandcrete thermal mechanism.</div>
+    </div>
+
+    <!-- DECOMPOSITION -->
+    <div class="panel" id="panel-decomp">
+      <div class="two">
+        <div class="card">
+          <div class="card-ttl">Year 0 stacked decomposition</div>
+          <div class="card-sub">Organic baseline (blue) + BTM migration label (orange)</div>
+          <div class="chart-wrap" style="height:240px"><canvas id="ch-decomp-stack"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">BTM fraction by zone</div>
+          <div class="card-sub">Formerly off-grid share of Day 1 peak</div>
+          <div class="chart-wrap" style="height:240px"><canvas id="ch-btm-frac"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-ttl">Zone-level decomposition table · Year 0 central parameters</div>
+        <div class="card-sub">S₀ = 3.64 · CF = 0.75 · γ = 1.00</div>
+        <table class="dtable"><thead><tr><th>Zone</th><th>Peak</th><th>P_BTM</th><th>BTM %</th><th>kW/HH</th><th>BTM bar</th></tr></thead><tbody id="decomp-tbody"></tbody></table>
+      </div>
+      <div class="card">
+        <div class="card-ttl">BTM migration evolution · Consumer Transformation</div>
+        <div class="card-sub">Migration declines as generators retire; organic load grows from BTM asset expiry + demand growth</div>
+        <div class="chart-wrap" style="height:200px"><canvas id="ch-btm-evol"></canvas></div>
+      </div>
+      <div class="insight" id="ins-decomp"></div>
+    </div>
+
+    <!-- SENSITIVITY -->
+    <div class="panel" id="panel-sensitivity">
+      <div class="two">
+        <div class="card">
+          <div class="card-ttl">Tornado chart · one-at-a-time sensitivity</div>
+          <div class="card-sub">Year 0 ring peak range · each bar = low to high · central shown as reference</div>
+          <div id="tornado" style="margin-top:8px"></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">S × CF joint heatmap</div>
+          <div class="card-sub">Year 0 peak MW · red = above feeder rating · green = within capacity</div>
+          <div id="heatmap" style="margin-top:10px"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-ttl">Stochastic ensemble · 10 seeds</div>
+        <div class="card-sub">Central parameters · CV = 3.7% · parameter uncertainty dominates stochastic variance</div>
+        <div class="chart-wrap" style="height:185px"><canvas id="ch-ensemble"></canvas></div>
+      </div>
+      <div class="insight"><b>Epistemic uncertainty dominates.</b> Coincidence factor CF produces the widest OAT range. At S = 2.00, Year 0 peak falls to 3.92 MW — below capacity. H₀ dominates the joint MC (ρ<sub>S</sub> = −0.96). <b>Stage 2 priority:</b> Feeder-head SCADA from Day 1 to replace the scalar H₀ — defined as simultaneous whole-feeder energisation, averaged over a habit-formation window — with a full hourly availability vector σ(h).</div>
+      <!-- MC section -->
+      <div class="two" style="margin-top:10px">
+        <div class="card">
+          <div class="card-ttl">Joint Monte Carlo distribution · N = 50,000</div>
+          <div class="card-sub">H₀ ~ LogNormal(ln7, 0.6) clipped [2,22] · λ ~ U[1.0,1.3] · CF ~ Beta(7,3)→[0.50,0.90] · γ ~ U[0.40,1.00]</div>
+          <div class="chart-wrap" style="height:220px"><canvas id="ch-mc-hist"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Variance attribution · Spearman ρ²</div>
+          <div class="card-sub">H₀ explains 92% of peak variance · CF and λ minor · γ negligible</div>
+          <div class="chart-wrap" style="height:220px"><canvas id="ch-mc-rho"></canvas></div>
+        </div>
+      </div>
+      <div class="two" style="margin-top:10px">
+        <div class="card">
+          <div class="card-ttl">P(feeder overloaded) by NERC service band</div>
+          <div class="card-sub">Feeder rated at 5 MW · band determined by actual H₀ draw · MC N = 50,000</div>
+          <div class="chart-wrap" style="height:200px"><canvas id="ch-mc-band"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">MC percentile summary</div>
+          <div class="card-sub">Year 0 ring peak under joint parameter uncertainty</div>
+          <div id="mc-summary" style="padding:10px 4px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:2.0"></div>
+        </div>
+      </div>
+      <div class="insight"><b>Monte Carlo key finding:</b> P(peak &gt; 5 MW feeder rating) = <b style="color:#f85149">91.9%</b> across all H₀ draws. Conditional on Band A designation (H₀ ≥ 20h), P(overloaded) = 1% — the embedded generation commitment is conditionally avoidable only for the best-served feeders. H₀ dominates with ρ<sub>S</sub> = −0.96; correcting H₀ uncertainty (SCADA) collapses the distribution to the OAT range. Central estimate 7.88 MW is the 56th percentile of the MC distribution.</div>
+    </div>
+
+    <!-- BTM TAXONOMY -->
+    <div class="panel" id="panel-btm">
+      <div class="two">
+        <div class="card">
+          <div class="card-ttl">Profile distribution · Zone A (MTF 5, GRA estate)</div>
+          <div class="card-sub">Joint multinomial draw · γ = 1.00 baseline</div>
+          <div class="chart-wrap" style="height:230px"><canvas id="ch-pie-a"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Profile distribution · Zone B (MTF 4, upper-middle)</div>
+          <div class="card-sub">Joint multinomial draw · mainstream urban</div>
+          <div class="chart-wrap" style="height:230px"><canvas id="ch-pie-b"></canvas></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-ttl">Six-profile BTM taxonomy</div>
+        <div class="card-sub">Mutually exclusive multinomial assignment · year-by-year asset retirement tracked</div>
+        <div class="prof-grid" id="prof-grid"></div>
+      </div>
+      <div class="card">
+        <div class="card-ttl">Asset retirement timeline</div>
+        <div class="card-sub">Fraction of households remaining in generator-owning profiles · graduated not cliff-edge</div>
+        <div class="chart-wrap" style="height:190px"><canvas id="ch-retire"></canvas></div>
+      </div>
+    </div>
+
+    <!-- CARBON -->
+    <div class="panel" id="panel-carbon">
+            <!-- Mix selector -->
+      <div class="card" style="margin-bottom:10px;padding:10px 14px">
+        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Developer generation mix</div>
+            <select id="c-mix" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:5px 10px;font-size:12px;font-family:'IBM Plex Sans',sans-serif" onchange="updateAll()">
+              <option value="floor">Floor &mdash; grid-equivalent &nbsp;(ΔEF = 0.27 kg/kWh)</option>
+              <option value="central" selected>Central &mdash; 60% solar + 40% gas &nbsp;(ΔEF = 0.46 kg/kWh)</option>
+              <option value="upper">Upper &mdash; 90% solar + 10% gas &nbsp;(ΔEF = 0.62 kg/kWh)</option>
+            </select>
+          </div>
+          <div style="font-size:10px;color:var(--muted);border-left:1px solid var(--border);padding-left:14px;max-width:340px;line-height:1.55">
+            <b style="color:var(--text)">Generator-on correction: 0.325.</b> Only hours when diesel generators were running displace emissions. Overnight BTM demand is inverter-served or unserved. Nigeria grid CDM CM 2022: ~80% gas + ~18% hydro + ~2% solar → EF<sub>grid</sub> = 0.43 kg/kWh.
+          </div>
+        </div>
+      </div>
+      <!-- KPI row: three scenarios -->
+      <div class="three">
+        <div class="card" style="text-align:center">
+          <div class="kpi-lbl">CO₂ — Floor (grid-only)</div>
+          <div style="font-size:21px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--muted);margin:6px 0" id="c-tco2-floor">—</div>
+          <div class="kpi-sub">t/yr · ΔEF = 0.27 kg/kWh</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div class="kpi-lbl">CO₂ — Central (60% solar)</div>
+          <div style="font-size:21px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--teal);margin:6px 0" id="c-tco2-central">—</div>
+          <div class="kpi-sub">t/yr · ΔEF = 0.46 kg/kWh</div>
+        </div>
+        <div class="card" style="text-align:center">
+          <div class="kpi-lbl">CO₂ — Upper (90% solar)</div>
+          <div style="font-size:21px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--accent);margin:6px 0" id="c-tco2-upper">—</div>
+          <div class="kpi-sub">t/yr · ΔEF = 0.62 kg/kWh</div>
+        </div>
+      </div>
+      <div class="two">
+        <div class="card">
+          <div class="card-ttl">Carbon revenue over concession · all active pathways</div>
+          <div class="card-sub">PoA generator-displacement baseline · $8–$15/t VCM range shown as band</div>
+          <div class="chart-wrap" style="height:250px"><canvas id="ch-carbon-traj"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Emission factor breakdown</div>
+          <div class="card-sub">EF_diesel = 0.70 kg/kWh · EF_grid = 0.43 kg/kWh · ΔEF = 0.27 kg/kWh</div>
+          <div class="chart-wrap" style="height:250px"><canvas id="ch-ef"></canvas></div>
+        </div>
+      </div>
+      <div class="insight"><b>PoA generator-displacement baseline:</b> Only demand served by a <em>running</em> diesel generator displaces emissions — overnight BTM demand (00:00–06:00) is largely served by inverter batteries or simply unserved, not by generators. Generators run primarily 18:00–22:00 (evening peak) and intermittently during the day; overnight operation is uncommon due to diesel cost (~₦1,200–2,400/hr for a 2.5 kVA unit). The 32.5% generator-on correction factor reflects the weighted profile-specific daily generator run-fraction across Profiles A, B, and C. PoA MRV must verify actual generator run-hours; the ~2,000 t CO₂/yr figure is the model estimate pending Stage 2 metering. Prosumer rooftop solar under the Prosumer Transition pathway is <b>not</b> credited to the developer.</div>
+    </div>
+
+    <!-- TARIFF SENSITIVITY -->
+    <div class="panel" id="panel-tariff">
+      <!-- KPI row: NERC statutory rates -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px">
+        <div class="card" style="text-align:center;padding:10px 6px">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Band A ≥20h</div>
+          <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#3fb950">₦225</div>
+          <div style="font-size:9px;color:var(--muted)">/kWh statutory</div>
+        </div>
+        <div class="card" style="text-align:center;padding:10px 6px">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Band B 16–20h</div>
+          <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#79c0ff">₦63</div>
+          <div style="font-size:9px;color:var(--muted)">/kWh statutory</div>
+        </div>
+        <div class="card" style="text-align:center;padding:10px 6px">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Band C 12–16h</div>
+          <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#58a6ff">₦50</div>
+          <div style="font-size:9px;color:var(--muted)">/kWh statutory</div>
+        </div>
+        <div class="card" style="text-align:center;padding:10px 6px">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Band D 8–12h</div>
+          <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#d29922">₦45</div>
+          <div style="font-size:9px;color:var(--muted)">/kWh statutory</div>
+        </div>
+        <div class="card" style="text-align:center;padding:10px 6px">
+          <div style="font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Band E 4–8h</div>
+          <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#f0883e">₦40</div>
+          <div style="font-size:9px;color:var(--muted)">/kWh statutory</div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="card" style="margin-bottom:10px;padding:10px 14px">
+        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px">Service Band (statutory tariff)</div>
+            <select id="tr-band" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:12px;font-family:'IBM Plex Sans',sans-serif" onchange="renderTariff()">
+              <option value="A">Band A  — ₦225/kWh  (≥20 h nominal)</option>
+              <option value="B">Band B  — ₦63/kWh   (16–20 h nominal)</option>
+              <option value="C" selected>Band C  — ₦50/kWh   (12–16 h nominal)</option>
+              <option value="D">Band D  — ₦45/kWh   (8–12 h nominal)</option>
+              <option value="E">Band E  — ₦40/kWh   (4–8 h nominal)</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px">
+              Franchise premium  <span id="tr-prem-val" style="color:var(--accent);font-family:'IBM Plex Mono',monospace">×1.5</span>
+            </div>
+            <input type="range" id="tr-prem" min="100" max="400" value="150" step="10"
+              style="width:120px" oninput="document.getElementById('tr-prem-val').textContent='×'+(this.value/100).toFixed(1);renderTariff()">
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:4px">USD/NGN rate</div>
+            <select id="tr-fx" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:4px;padding:5px 8px;font-size:12px;font-family:'IBM Plex Sans',sans-serif" onchange="renderTariff()">
+              <option value="1200">₦1,200</option>
+              <option value="1600" selected>₦1,600</option>
+              <option value="2000">₦2,000</option>
+              <option value="2500">₦2,500</option>
+            </select>
+          </div>
+          <div style="font-size:10px;color:var(--muted);border-left:1px solid var(--border);padding-left:14px;max-width:260px;line-height:1.5">
+            <b style="color:var(--text)">Service Band ≠ Actual H₀.</b> NERC's band designation sets the statutory tariff; actual supply hours (H₀, set on the Model Controls slider) determine demand. A Band C feeder delivering H₀=8h pays Band C tariff but faces Band D demand.
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts row 1 -->
+      <div class="two" style="margin-bottom:10px">
+        <div class="card">
+          <div class="card-ttl">Annual developer revenue vs franchise tariff</div>
+          <div class="card-sub">
+            Demand set by H₀ slider · BTM fraction price-inelastic to diesel ceiling · MC P10–P90 demand uncertainty shown
+          </div>
+          <div class="chart-wrap" style="height:240px"><canvas id="ch-tr-rev"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Demand suppression vs tariff premium</div>
+          <div class="card-sub">
+            Organic load: price-elastic (η = −0.23) · BTM load: inelastic up to diesel ceiling (₦750/kWh)
+          </div>
+          <div class="chart-wrap" style="height:240px"><canvas id="ch-tr-demand"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Charts row 2 -->
+      <div class="two">
+        <div class="card">
+          <div class="card-ttl">Service Band × actual H₀ — annual revenue heatmap</div>
+          <div class="card-sub">
+            Revenue (₦B/yr) at NERC statutory tariff for each band · colour = ₦Billion · franchise sweet spot: high band + low H₀
+          </div>
+          <div class="chart-wrap" style="height:240px"><canvas id="ch-tr-heat"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Consumer cost comparison</div>
+          <div class="card-sub">
+            Effective cost per kWh: franchise tariff vs diesel generator vs current DisCo cost · by service band
+          </div>
+          <div class="chart-wrap" style="height:240px"><canvas id="ch-tr-cost"></canvas></div>
+        </div>
+      </div>
+
+      <!-- KPI live row -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px">
+        <div class="card" style="text-align:center;padding:10px">
+          <div class="kpi-lbl">Franchise tariff</div>
+          <div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--accent);margin:4px 0" id="tr-kpi-tariff">—</div>
+          <div class="kpi-sub">₦/kWh · band × premium</div>
+        </div>
+        <div class="card" style="text-align:center;padding:10px">
+          <div class="kpi-lbl">Annual revenue</div>
+          <div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--green);margin:4px 0" id="tr-kpi-rev">—</div>
+          <div class="kpi-sub">₦Billion/yr at central demand</div>
+        </div>
+        <div class="card" style="text-align:center;padding:10px">
+          <div class="kpi-lbl">Revenue floor (BTM)</div>
+          <div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--teal);margin:4px 0" id="tr-kpi-floor">—</div>
+          <div class="kpi-sub">₦Billion/yr · price-inelastic</div>
+        </div>
+        <div class="card" style="text-align:center;padding:10px">
+          <div class="kpi-lbl">Consumer saving vs diesel</div>
+          <div style="font-size:20px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--orange);margin:4px 0" id="tr-kpi-saving">—</div>
+          <div class="kpi-sub">% reduction in energy cost</div>
+        </div>
+      </div>
+
+      <div class="insight">
+        <b>Tariff–demand decoupling:</b> The NERC Service Band determines the statutory tariff floor; actual supply hours H₀ (set via the Model Controls slider) determine unsuppressed demand via S₀. These are independent variables. The commercially attractive franchise scenario — high-tier composition + low H₀ + Band C/D designation — maximises both demand uplift and revenue at a tariff households can afford relative to diesel. The BTM fraction (63% at central parameters) provides a price-inelastic revenue floor up to the diesel equivalent (~₦750/kWh): BTM-migrating households will pay any tariff below their generator running cost.
+      </div>
+    </div>
+
+    <!-- APPLIANCE PORTFOLIO -->
+    <div class="panel" id="panel-appliances">
+      <div class="card">
+        <div class="card-ttl">Twelve-appliance portfolio · simulator v16 · per-tier penetration and scaling class</div>
+        <div class="card-sub">Data sources: World Bank MTF 2018 · PeopleSuN 2022 · Uyigue et al. 2015 · BusinessDay/TNS 2013 · Olaniyan et al. 2018 · Author calibration</div>
+        <div style="overflow-x:auto;margin-top:10px">
+        <table style="width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:10px">
+          <thead><tr style="border-bottom:1px solid var(--border)">
+            <th style="text-align:left;padding:7px 10px;color:var(--muted);font-weight:500">Appliance</th>
+            <th style="text-align:center;padding:7px 8px;color:var(--muted);font-weight:500">kW rated</th>
+            <th style="text-align:center;padding:7px 8px;color:var(--accent);font-weight:500">MTF 4 pen.</th>
+            <th style="text-align:center;padding:7px 8px;color:var(--orange);font-weight:500">MTF 3 pen.</th>
+            <th style="text-align:center;padding:7px 8px;color:var(--green);font-weight:500">Tier 4 pen.</th>
+            <th style="text-align:center;padding:7px 8px;color:var(--muted);font-weight:500">S(a) scaling</th>
+            <th style="text-align:left;padding:7px 8px;color:var(--muted);font-weight:500">Primary data source</th>
+            <th style="text-align:center;padding:7px 6px;color:var(--muted);font-weight:500">v16</th>
+          </tr></thead>
+          <tbody id="app-table-body"></tbody>
+        </table>
+        </div>
+      </div>
+      <div class="two">
+        <div class="card">
+          <div class="card-ttl">Year 0 appliance demand contribution · ring aggregate</div>
+          <div class="card-sub">MW contributed by each class at central parameters · orange = additions beyond Richardson base six</div>
+          <div class="chart-wrap" style="height:320px"><canvas id="ch-app-contrib"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Supply-availability scaling class distribution</div>
+          <div class="card-sub">Five behavioural categories — how each class responds to reliable supply</div>
+          <div class="chart-wrap" style="height:320px"><canvas id="ch-app-scale"></canvas></div>
+        </div>
+      </div>
+      <div class="insight">
+        <b>Six additions beyond the Richardson base six:</b>
+        <b style="color:var(--orange)">Deep Freezer</b> — Continuous-draw thermostat-cycling appliance. Abuja end-use study (Uyigue et al. 2015, n=35) measured 46% penetration at 756 kWh/yr (86 W mean continuous). Under franchise supply it transitions from intermittent-grid-hours to genuinely 24-hour operation. Likely corrects under-counting in the MTF Fridge column where survey respondents conflate the two appliances.
+        <b style="color:var(--orange)">Washing Machine</b> — BusinessDay/TNS 2013 survey: 37% of urban 31–40yr cohort. Market growing at ~16% CAGR (Euromonitor 2024). Penetration 28% MTF 4 / 10% MTF 3 (conservative). Scaling 0.65×S₀: usage frequency increases with reliable supply but sub-proportionally.
+        <b style="color:var(--orange)">Microwave Oven</b> — Listed in Olaniyan et al. 2018 at 800 W. Task-completion scaling (S=1.0): reheating frequency is socially determined, not supply-hour constrained.
+        <b style="color:var(--orange)">Electric Cooking</b> — Supply-unlocked appliance. Under 6.6 h/day rationed supply, LPG gas is universal because electric cooking is too unreliable mid-cycle. Under franchise 24/7 supply, electric cooking becomes rational. Penetration low at Year 0 (10% MTF 4 Zone B) and grows at 2.5%/yr as reliability is demonstrated.
+        <b>Dishwasher</b> — Identified but excluded: no Nigerian-specific penetration data found. Named in paper Section IV-D as a Stage 3 extension.
+      </div>
+    </div>
+
+    <!-- ABOUT THIS MODEL -->
+    <div class="panel" id="panel-about">
+      <div class="card">
+        <div class="card-ttl">About this dashboard</div>
+        <div class="card-sub">Nigeria FES Demand Simulator · IEEE PowerAfrica 2026 · Dashboard v9 · Simulator v16</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:14px">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:8px;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;text-transform:uppercase">What this model does</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.8">
+              This dashboard implements an original stochastic demand methodology for Nigerian 11 kV distribution feeders. It computes <b style="color:var(--text)">unsuppressed electricity demand</b> — what a feeder will actually face the moment <b style="color:var(--text)">24-hour reliable supply</b> is established — rather than the metered consumption recorded under chronic rationing (national urban average: 6.6 h/day).<br><br>
+              The framework introduces five original modelling layers: a six-profile BTM coping-asset taxonomy with year-by-year hardware retirement, a twelve-appliance supply-availability scaling model distinguishing continuous-use, task-completion, and supply-unlocked loads, a three-node sandcrete RC thermal model, a post-COVID SME/WFH occupancy layer, and a post-hoc price-elasticity correction. The Markov-chain switching engine and Nigerian appliance penetration data that underpin the appliance engine are acknowledged in the Sources section of this tab.
+            </div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:8px;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;text-transform:uppercase">Key model concepts</div>
+            <div style="font-size:12px;line-height:1.9">
+              <div style="margin-bottom:6px"><span style="color:var(--orange);font-family:'IBM Plex Mono',monospace;font-size:10px">BTM Migration</span> <span style="color:var(--muted)">— demand formerly served by diesel generators that becomes grid-visible on Day 1. Price-insensitive and meter-stable.</span></div>
+              <div style="margin-bottom:6px"><span style="color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:10px">Supply scale S₀ = λ·(24/H₀)</span> <span style="color:var(--muted)">— how much appliance use increases when rationing ends. <b style="color:var(--text)">H₀ is the average daily duration of <b style="color:var(--text)">simultaneous whole-feeder energisation</b></b>, measured at the feeder head and averaged over a habit-formation window (minimum 12 weeks, ideally covering a full seasonal cycle). This is <i>not</i> the DisCo's nominated band allocation, which may reflect sectionalized operation in which different laterals are energised at different times. Using a sectionalized average overstates the supply hours that household coping-asset portfolios were calibrated against, and therefore understates Day-1 grid draw. The Markov switching probabilities reflect the behavioural equilibrium households form around the simultaneous supply they <i>actually experience</i>. The NERC service bands (Band A ≥20 h → Band E 4 h) are useful anchors for sensitivity but are not the primary input. λ>1 captures new appliance acquisition unlocked by reliable supply, but diminishes above 14 h/day.</span></div>
+              <div style="margin-bottom:6px"><span style="color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:10px">Supply-unlocked load</span> <span style="color:var(--muted)">— demand that didn't exist under rationing (electric cooking). Penetration grows through the concession as reliability is demonstrated.</span></div>
+              <div style="margin-bottom:6px"><span style="color:var(--purple);font-family:'IBM Plex Mono',monospace;font-size:10px">Sandcrete nocturnal lag</span> <span style="color:var(--muted)">— hollow block walls store daytime solar heat and release it at night, keeping indoor T 8–10°C above outdoor T until 02:00.</span></div>
+              <div style="margin-bottom:6px"><span style="color:var(--teal);font-family:'IBM Plex Mono',monospace;font-size:10px">WFH/SME plateau</span> <span style="color:var(--muted)">— 30–40% of upper-tier connections host home-based businesses, sustaining daytime demand at 60–80% of the evening peak.</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="two">
+        <div class="card">
+          <div class="card-ttl">Five model contributions · IEEE PowerAfrica 2026</div>
+          <div style="margin-top:10px;font-size:11px;line-height:1.8;color:var(--muted)">
+            <div style="display:flex;gap:10px;margin-bottom:8px"><div style="color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;min-width:20px">i</div><div><b style="color:var(--text)">Six-profile BTM household taxonomy</b><br>Multi-asset ownership modelled jointly. Year-by-year netting eligibility tracked as generators retire (all gone by Y8) and solar panels age. Panel power degradation (0.5%/yr, IEA PVPS 2023) applied per household — zero effect on post-sunset peak; shallows midday duck-curve progressively. BESS capacity fade ≈20% after 5yr SSA cycling (Uddin et al. 2017); 5–6yr household replacement cycle assumed (≥85% capacity at retirement). <b style="color:var(--orange)">Model limitations (Y10–20):</b> Solar replacement not modelled (Y20 penetration is a lower bound; MTF 5: ~20% model vs ~40–55% with replacement). TOU-arbitrage BESS omitted — Y15–20 BESS conservative for high-tariff scenarios. By Y15, &gt;80% of the ring is pure-grid under baseline pathways. Both biases are upward — conservative for sizing.</div></div>
+            <div style="display:flex;gap:10px;margin-bottom:8px"><div style="color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;min-width:20px">ii</div><div><b style="color:var(--text)">12-appliance supply-availability scaling</b><br>Four scaling classes: continuous-use (S₀), AC (0.8S₀), throughput-bounded (0.65S₀ for washing machine and electric cooker), and task-completion (1.0 for boiler, pump, iron, microwave). Six appliances extend the Richardson base six.</div></div>
+            <div style="display:flex;gap:10px;margin-bottom:8px"><div style="color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;min-width:20px">iii</div><div><b style="color:var(--text)">Sandcrete three-node RC thermal model</b><br>Indoor air temperature decoupled from outdoor via wall thermal storage. Captures nocturnal cooling load that outdoor temperature alone misses.</div></div>
+            <div style="display:flex;gap:10px;margin-bottom:8px"><div style="color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;min-width:20px">iv</div><div><b style="color:var(--text)">Post-COVID SME/WFH occupancy model</b><br>30–40% of upper-tier households host home-based businesses. Produces sustained daytime plateau absent from all pre-2020 models.</div></div>
+            <div style="display:flex;gap:10px"><div style="color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;min-width:20px">v</div><div><b style="color:var(--text)">Post-hoc price-elasticity correction</b><br>Separates the price-inelastic BTM fraction from the elastic organic load analytically, without re-running the simulation.</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Identified model extensions · out of scope in this round</div>
+          <div style="margin-top:10px;font-size:11px;line-height:1.8;color:var(--muted)">
+            <div style="margin-bottom:10px"><b style="color:var(--red)">EV charging (Zone A)</b> — Logistic adoption curve, 0.05–0.09 MW at Year 5, 0.30–0.45 MW at Year 20. Extends evening peak. Excluded: penetration data requires Zone A household income survey.</div>
+            <div style="margin-bottom:10px"><b style="color:var(--red)">Differential religious holiday modifiers</b> — Current h_mod applies uniformly across all households. Self-employed Christians do not observe Islamic feasts. Ramadan Iftar spike unmodelled. Fix: add religion_share feeder parameter. Peak error on Eid days: ~15–20% overestimate.</div>
+            <div style="margin-bottom:10px"><b style="color:var(--red)">Commercial/institutional consumers</b> — Offices, plazas, banks, schools operate on C1/C2 tariff connections. Per-connection BTM migration from one commercial building equals 50–100 residential households. Aggregate omission: 0.3–0.8 MW. Fix: one-day field survey at franchise commencement.</div>
+            <div><b style="color:var(--red)">Dishwasher</b> — Identified but excluded from model. No Nigerian-specific penetration data. Estimated 5–12% Zone A. Stage 3 extension pending connection-level survey.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:0">
+        <div class="card-ttl">Investment applications · what each instrument uses</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px;font-size:11px">
+          <div style="padding:12px;background:var(--surface2);border-radius:4px;border-left:3px solid var(--accent)"><div style="color:var(--accent);font-family:'IBM Plex Mono',monospace;font-size:10px;margin-bottom:5px">ZAFIRI · $1B EQUITY</div><div style="color:var(--muted)">20-year trajectory under 5 pathways. Year 20 spread of 93% defines the revenue scenario envelope for equity stress-testing.</div></div>
+          <div style="padding:12px;background:var(--surface2);border-radius:4px;border-left:3px solid var(--orange)"><div style="color:var(--orange);font-family:'IBM Plex Mono',monospace;font-size:10px;margin-bottom:5px">INFRACREDIT · BONDS</div><div style="color:var(--muted)">BTM fraction (63%) is price-insensitive up to the diesel ceiling. Provides bond debt service coverage floor; the generator-on correction reduces PoA carbon revenue to ~$16k–30k/yr.</div></div>
+          <div style="padding:12px;background:var(--surface2);border-radius:4px;border-left:3px solid var(--green)"><div style="color:var(--green);font-family:'IBM Plex Mono',monospace;font-size:10px;margin-bottom:5px">DARES · GRANT</div><div style="color:var(--muted)">BTM decomposition identifies formerly grid-invisible demand verifiable only after franchise metering. Supports PBG disbursement.</div></div>
+          <div style="padding:12px;background:var(--surface2);border-radius:4px;border-left:3px solid var(--teal)"><div style="color:var(--teal);font-family:'IBM Plex Mono',monospace;font-size:10px;margin-bottom:5px">ECOWISE PoA · CARBON</div><div style="color:var(--muted)">~4,000–6,500 t CO₂/yr (fleet EF corrected). $32k–98k/yr at $8–15/t VCM. PoA registration = Stage 2 model validation.</div></div>
+        
+        <!-- Sources -->
+        <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px">
+          <div style="font-size:11px;font-weight:600;color:var(--text);margin-bottom:10px;font-family:'IBM Plex Mono',monospace;letter-spacing:.5px;text-transform:uppercase">Sources and Acknowledgements</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.9;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+            <div>
+              <div style="color:var(--text);font-weight:600;margin-bottom:4px">Appliance switching engine</div>
+              Richardson, I., Thomson, M. &amp; Infield, D. (2008). A high-resolution domestic building occupancy model. <i>Energy and Buildings</i>, 40(8), 1560–1566.<br>
+              Richardson, I. et al. (2010). Domestic electricity use: A high-resolution energy demand model. <i>Energy and Buildings</i>, 42(10), 1878–1887.
+            </div>
+            <div>
+              <div style="color:var(--text);font-weight:600;margin-bottom:4px">Nigerian appliance calibration</div>
+              Oluwole, O. et al. (2021). Bottom-up residential demand model: Abuja, Nigeria. <i>Energy for Sustainable Development</i>, 60, 130–143.
+            </div>
+            <div>
+              <div style="color:var(--text);font-weight:600;margin-bottom:4px">Demand survey data</div>
+              Stevanato, M. et al. (2022). PeopleSuN: Energy access survey, Nigeria. <i>Energy for Sustainable Development</i>, 68, 113–126.<br>
+              World Bank MTF Energy Access Survey, Nigeria (2019).<br>
+              Energy for Growth Hub (2025). 160 Days in the Dark.
+            </div>
+            <div>
+              <div style="color:var(--text);font-weight:600;margin-bottom:4px">Supporting sources</div>
+              Uddin et al. (2017). BESS degradation in Sub-Saharan Africa. <i>Energy Procedia</i>, 138, 267–272.<br>
+              Olaniyan et al. (2018). Residential electricity consumption, Nigeria. <i>Sustainability</i>, 10(5).<br>
+              Ogundari et al. (2023). Energy-efficient lighting, SW Nigeria. <i>Afr. J. Sci. Policy Innov. Manage.</i>, 4(1).
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:var(--muted);font-style:italic">
+            The original framework — BTM taxonomy, supply-availability scaling, sandcrete RC thermal model, WFH/SME occupancy layer, and price-elasticity correction — was developed independently by the author. The Markov switching engine and Nigerian penetration data provide the appliance-level foundation; all extensions, integrations, and the unsuppressed demand framing are original contributions submitted to IEEE PowerAfrica 2026.
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="footer">
+  <span>Original methodology · <span id="footer-author">[Author]</span> · IEEE PowerAfrica 2026 · Dashboard v9 · Simulator v16</span>
+  <span>Markov-chain appliance engine recalibrated for unsuppressed Nigerian distribution demand · Sources in About tab · No conflicts of interest</span>
+  <span id="footer-ts"></span>
+</div>
+
+<!-- Scripts at bottom of body — guarantees DOM and CDN libs are ready -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="lookup.js"></script>
 </body>
 </html>

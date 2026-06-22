@@ -1731,71 +1731,48 @@ function buildAppliancePanel(){
   });
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────────
-buildPWList();
-buildBTMPanel();
-// updateAll() — replaced by fetch bootstrap below
-document.querySelectorAll('input[type=range],select').forEach(el=>el.addEventListener('input',updateAll));
-// Note: sl-S removed; S is now derived from sl-h0 and sl-lam
-document.getElementById('footer-ts').textContent=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
-
-// ═══════════════════════════════════════════════════════════════════
-// LOOKUP ENGINE — overrides the live-compute functions above.
-// All demand outputs now come from outputs.json (pre-computed).
-// ═══════════════════════════════════════════════════════════════════
+// ── LOOKUP OVERRIDES ─────────────────────────────────────────────────────────
 let DB = null;
 
 function nearest(arr, v) {
   return arr.reduce((a,b) => Math.abs(b-v)<Math.abs(a-v)?b:a);
 }
 function lookupScalar(h0, cf, pw, yr) {
-  if(!DB) return {peak:7.88, btm:0.63, co2:2000};
+  if(!DB) return {peak:7.88,btm:0.63,co2:2000};
   const h0n=nearest(DB.meta.h0_vals,h0),
         cfn=nearest(DB.meta.cf_vals,cf),
         yrn=nearest(DB.meta.years,yr);
-  const row = DB.scalar.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw&&r.yr===yrn);
-  return row || DB.scalar.find(r=>r.pw===pw&&r.yr===yrn) || DB.scalar[0];
+  return DB.scalar.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw&&r.yr===yrn)
+      || DB.scalar.find(r=>r.pw===pw&&r.yr===yrn)
+      || DB.scalar[0];
 }
 function lookupTraj(h0, cf, pw) {
   if(!DB) return Array(21).fill(7.88);
   const h0n=nearest([4,6.6,8,10,14,20],h0),
         cfn=nearest([0.60,0.75,0.85],cf);
-  const row = DB.trajectory.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw);
-  return row ? row.traj : DB.trajectory.find(r=>r.pw===pw).traj;
+  return (DB.trajectory.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw)
+       || DB.trajectory.find(r=>r.pw===pw)).traj;
 }
-function lookupDiurnal(h0, season, yr, pw) {
-  if(!DB) return Array(24).fill(0);
-  const h0n=nearest([2,4,6.6,8,10,12,16,20],h0),
-        yrn=nearest([0,5,10,15,20],yr),
-        sea=season==='harm'?'harmattan':season;
-  const row = DB.diurnal.find(r=>r.h0===h0n&&r.season===sea&&r.yr===yrn&&r.pw===pw);
-  return row ? row.profile : DB.diurnal.find(r=>r.pw===pw).profile;
-}
-
-// Override ringPeak — was a live compute, now a lookup + scaling
 function ringPeak(p, pw, yr) {
   const row = lookupScalar(p.h0, p.cf, (pw||'ct').toUpperCase(), yr||0);
-  const hhScale  = (zones.reduce((s,z)=>s+z.hh,0)) / 4000;
+  const hhScale  = zones.reduce((s,z)=>s+z.hh,0) / 4000;
   const lamScale = 1 + ((p.lam||1)-1)*0.6;
   const gpScale  = 0.40 + ((p.gp||100)/100)*0.60;
   return +(row.peak * hhScale * lamScale * gpScale).toFixed(2);
 }
-// Override trajPeak — was ringPeak * pathMult, now from trajectory table
 function trajPeak(path, year, p) {
   const traj = lookupTraj(p.h0, p.cf, path.toUpperCase());
   const yrn  = Math.min(20, Math.max(0, Math.round(year)));
-  const hhScale  = (zones.reduce((s,z)=>s+z.hh,0)) / 4000;
+  const hhScale  = zones.reduce((s,z)=>s+z.hh,0) / 4000;
   const lamScale = 1 + ((p.lam||1)-1)*0.6;
   const gpScale  = 0.40 + ((p.gp||100)/100)*0.60;
   return +(traj[yrn] * hhScale * lamScale * gpScale).toFixed(2);
 }
-// Override pathMult — derive from trajectory table
 function pathMult(path, year) {
   if(!DB) return 1;
   const traj = lookupTraj(6.6, 0.75, path.toUpperCase());
   return traj[Math.min(20,Math.round(year))] / traj[0];
 }
-// Override btmMW — use lookup btm fraction
 function btmMW(peak, gp, h0) {
   const p = P();
   const row = lookupScalar(p.h0, p.cf, 'CT', 0);
@@ -1803,19 +1780,25 @@ function btmMW(peak, gp, h0) {
   return +(peak * Math.min(0.90, row.btm * gpScale)).toFixed(2);
 }
 
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.querySelectorAll('input[type=range],select').forEach(
+  el=>el.addEventListener('input', updateAll));
+document.getElementById('footer-ts').textContent =
+  new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
 
-// ── Fetch outputs.json then start the dashboard ──────────────────
 fetch('outputs.json')
   .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
   .then(data=>{
-    DB=data;
-    console.log('[lookup] outputs.json loaded — '+data.scalar.length+' scalar rows');
+    DB = data;
+    console.log('[lookup] Loaded ' + data.scalar.length + ' scalar rows');
+    buildPWList();
+    buildBTMPanel();
     updateAll();
   })
   .catch(e=>{
-    console.error('[lookup] Failed to load outputs.json:',e);
+    console.error('[lookup] Failed:', e);
     document.body.insertAdjacentHTML('afterbegin',
-      '<div style="position:fixed;top:0;left:0;right:0;background:#f85149;'+
-      'color:#fff;padding:12px 20px;font-family:monospace;font-size:13px;z-index:9999">'+
-      '⚠ outputs.json not found. Ensure the file is uploaded to your repository.</div>');
+      '<div style="position:fixed;top:0;left:0;right:0;background:#f85149;' +
+      'color:#fff;padding:12px 20px;font-family:monospace;font-size:13px;z-index:9999">' +
+      'outputs.json not found. Upload it to your repository.</div>');
   });

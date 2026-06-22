@@ -1,89 +1,4 @@
-/* ── LOOKUP ENGINE ─────────────────────────────────────────────
-   Reads pre-computed outputs.json
-   ──────────────────────────────────────────────────────────────── */
-let DB = null;
-
-function nearest(arr, v) {
-  return arr.reduce((a,b) => Math.abs(b-v)<Math.abs(a-v)?b:a);
-}
-
-function lookupScalar(h0, cf, pw, yr) {
-  const h0n=nearest(DB.meta.h0_vals,h0),
-        cfn=nearest(DB.meta.cf_vals,cf),
-        yrn=nearest(DB.meta.years,yr);
-  const row = DB.scalar.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw&&r.yr===yrn);
-  return row || DB.scalar.find(r=>r.pw===pw&&r.yr===yrn) || DB.scalar[0];
-}
-
-function lookupDiurnal(h0, season, yr, pw) {
-  const h0n=nearest([2,4,6.6,8,10,12,16,20],h0),
-        yrn=nearest([0,5,10,15,20],yr),
-        sea=season==='harm'?'harmattan':season;
-  const row = DB.diurnal.find(r=>r.h0===h0n&&r.season===sea&&r.yr===yrn&&r.pw===pw);
-  return row ? row.profile : DB.diurnal.find(r=>r.pw===pw).profile;
-}
-
-function lookupTraj(h0, cf, pw) {
-  const h0n=nearest([4,6.6,8,10,14,20],h0),
-        cfn=nearest([0.60,0.75,0.85],cf);
-  const row = DB.trajectory.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw);
-  return row ? row.traj : DB.trajectory.find(r=>r.pw===pw).traj;
-}
-
-function lookupZone(hhA,hhB,hhC) {
-  const hAn=nearest(DB.meta.hhA_vals,hhA),
-        hBn=nearest(DB.meta.hhB_vals,hhB),
-        hCn=nearest(DB.meta.hhC_vals,hhC);
-  return DB.zones.find(r=>r.hhA===hAn&&r.hhB===hBn&&r.hhC===hCn) || DB.zones[0];
-}
-
-// ── Override compute functions with lookup equivalents ────────────
-function ringPeak(p, pw, yr) {
-  if(!DB) return 7.88;
-  const row = lookupScalar(p.h0, p.cf, pw||'CT', yr||0);
-  const hhScale = (p.hhA+p.hhB+p.hhC) / 4000;
-  const lamScale = 1 + (p.lam-1.0)*0.6;
-  const gpScale  = 0.40 + (p.gp/100)*0.60;
-  return +(row.peak * hhScale * lamScale * gpScale).toFixed(2);
-}
-
-function btmFrac(p, pw, yr) {
-  if(!DB) return 0.63;
-  const row = lookupScalar(p.h0, p.cf, pw||'CT', yr||0);
-  const gpScale = 0.40 + (p.gp/100)*0.60;
-  return +Math.min(0.90, row.btm * gpScale).toFixed(3);
-}
-
-function co2Lookup(p, pw, yr) {
-  if(!DB) return 2000;
-  const peak = ringPeak(p, pw||'CT', yr||0);
-  const btm  = btmFrac(p, pw||'CT', yr||0);
-  return Math.round(peak*btm*1000*0.325*8760*0.984/1000);
-}
-
-function pathMult(pw, yr) {
-  if(!DB) return 1;
-  const traj = lookupTraj(6.6, 0.75, pw);
-  const yrn  = Math.min(20, Math.max(0, Math.round(yr)));
-  return traj[yrn] / traj[0];
-}
-
-function trajPeak(pw, yr, p) {
-  if(!DB) return ringPeak(p,pw,yr);
-  const traj = lookupTraj(p.h0, p.cf, pw);
-  const yrn  = Math.min(20, Math.max(0, Math.round(yr)));
-  const base = traj[yrn];
-  const hhScale = (p.hhA+p.hhB+p.hhC)/4000;
-  const lamScale = 1+(p.lam-1.0)*0.6;
-  const gpScale  = 0.40+(p.gp/100)*0.60;
-  return +(base * hhScale * lamScale * gpScale).toFixed(2);
-}
-
-function btmFracT(pw, yr, p) { return btmFrac(p, pw, yr); }
-function peakMWT(pw, yr, p)   { return trajPeak(pw, yr, p); }
-
-
-// ── Constants and chart defaults (from engine.js) ─────────────
+// ── Constants (must be first) ───────────────────────────────────
 // ── CONSTANTS ────────────────────────────────────────────────────────────────
 const HOURS  = Array.from({length:24},(_,i)=>i);
 const YEARS  = [0,5,10,15,20];
@@ -136,7 +51,80 @@ const HR_LABELS = HOURS.map(h=>h%3===0?h+':00':'');
 let activePathways = new Set(PATHS);
 let charts = {};
 
-// ── Chart rendering and UI (from engine.js) ─────────────────
+/* ── LOOKUP ENGINE v9 ─────────────────────────────────────────────
+   Reads pre-computed outputs.json. No live model runs in browser.
+   ──────────────────────────────────────────────────────────────── */
+let DB = null;
+
+function nearest(arr, v) {
+  return arr.reduce((a,b) => Math.abs(b-v)<Math.abs(a-v)?b:a);
+}
+
+function lookupScalar(h0, cf, pw, yr) {
+  const h0n=nearest(DB.meta.h0_vals,h0),
+        cfn=nearest(DB.meta.cf_vals,cf),
+        yrn=nearest(DB.meta.years,yr);
+  const row = DB.scalar.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw&&r.yr===yrn);
+  return row || DB.scalar.find(r=>r.pw===pw&&r.yr===yrn) || DB.scalar[0];
+}
+
+function lookupDiurnal(h0, season, yr, pw) {
+  const h0n=nearest([2,4,6.6,8,10,12,16,20],h0),
+        yrn=nearest([0,5,10,15,20],yr),
+        sea=season==='harm'?'harmattan':season;
+  const row = DB.diurnal.find(r=>r.h0===h0n&&r.season===sea&&r.yr===yrn&&r.pw===pw);
+  return row ? row.profile : DB.diurnal.find(r=>r.pw===pw).profile;
+}
+
+function lookupTraj(h0, cf, pw) {
+  const h0n=nearest([4,6.6,8,10,14,20],h0),
+        cfn=nearest([0.60,0.75,0.85],cf);
+  const row = DB.trajectory.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw);
+  return row ? row.traj : DB.trajectory.find(r=>r.pw===pw).traj;
+}
+
+function lookupZone(hhA,hhB,hhC) {
+  const hAn=nearest(DB.meta.hhA_vals,hhA),
+        hBn=nearest(DB.meta.hhB_vals,hhB),
+        hCn=nearest(DB.meta.hhC_vals,hhC);
+  return DB.zones.find(r=>r.hhA===hAn&&r.hhB===hBn&&r.hhC===hCn) || DB.zones[0];
+}
+
+// ── Lookup-backed compute functions (override engine versions) ───
+function ringPeak(p, pw, yr) {
+  if(!DB) return 7.88;
+  const row = lookupScalar(p.h0, p.cf, pw||'CT', yr||0);
+  const hhScale = ((p.hhA||1000)+(p.hhB||2000)+(p.hhC||1000)) / 4000;
+  const lamScale = 1 + ((p.lam||1)-1.0)*0.6;
+  const gpScale  = 0.40 + ((p.gp||100)/100)*0.60;
+  return +(row.peak * hhScale * lamScale * gpScale).toFixed(2);
+}
+
+function btmFrac(p, pw, yr) {
+  if(!DB) return 0.63;
+  const row = lookupScalar(p.h0, p.cf, pw||'CT', yr||0);
+  const gpScale = 0.40 + ((p.gp||100)/100)*0.60;
+  return +Math.min(0.90, row.btm * gpScale).toFixed(3);
+}
+
+function trajPeak(path, year, p) {
+  if(!DB) return 7.88;
+  const traj = lookupTraj(p.h0, p.cf, path.toUpperCase());
+  const yrn  = Math.min(20, Math.max(0, Math.round(year)));
+  const hhScale  = ((p.hhA||1000)+(p.hhB||2000)+(p.hhC||1000)) / 4000;
+  const lamScale = 1 + ((p.lam||1)-1.0)*0.6;
+  const gpScale  = 0.40 + ((p.gp||100)/100)*0.60;
+  return +(traj[yrn] * hhScale * lamScale * gpScale).toFixed(2);
+}
+
+function pathMult(path, year) {
+  if(!DB) return 1;
+  const traj = lookupTraj(6.6, 0.75, path.toUpperCase());
+  return traj[Math.min(20,Math.round(year))] / traj[0];
+}
+
+
+// ── Engine body (rendering + UI) ────────────────────────────────
 const DEFAULT_ZONES = [
   {name:'Zone A (MTF 5)', hh:1000, tier:1},  // MTF 5 — GRA/premium estate
   {name:'Zone B (MTF 4)', hh:2000, tier:2},  // MTF 4 — upper-middle residential
@@ -422,7 +410,7 @@ const DEF_EF = {
 };
 const DEF_PROJ_EF = {floor:0.430, central:0.238, upper:0.082};
 
-function co2Lookup(p, defKey){
+function co2(p, defKey){
   // CO2 = BTM energy x generator-on fraction x DEF
   // Generator-on correction 0.325: generators run mainly 18-22h
   // Overnight is rare (diesel cost approx NGN1,200-2,400/hr)
@@ -476,7 +464,7 @@ function updateKPIs(p){
   const peak=ringPeak(p);   // Year 0
   const btm=btmMW(peak,p.gp);
   const gen=Math.max(0,peak-p.cap);
-  const tco2=co2Lookup(p,'floor');
+  const tco2=co2(p,'floor');
   const lo=(tco2*8/1000).toFixed(0);
   const hi=(tco2*15/1000).toFixed(0);
 
@@ -982,13 +970,13 @@ function updateCarbon(p){
   var keys = ['floor','central','upper'];
   for(var ki=0; ki<keys.length; ki++){
     var k = keys[ki];
-    var co2k = co2Lookup(p, k);
+    var co2k = co2(p, k);
     var el = document.getElementById('c-tco2-'+k);
     if(el) el.textContent = Math.round(co2k).toLocaleString()+' t';
   }
 
   // Main header KPI uses selected mix
-  var tco2sel = co2Lookup(p, mixKey);
+  var tco2sel = co2(p, mixKey);
   var el_tco2 = document.getElementById('c-tco2');
   var el_lo   = document.getElementById('c-lo');
   var el_hi   = document.getElementById('c-hi');

@@ -1737,21 +1737,29 @@ let DB = null;
 function nearest(arr, v) {
   return arr.reduce((a,b) => Math.abs(b-v)<Math.abs(a-v)?b:a);
 }
+// Map engine pathway keys (ct/us/ra/sd/pt) to JSON keys (CT/HG/MA/DSF/PT)
+const PW_KEY_MAP = {ct:'CT',us:'HG',ra:'MA',sd:'DSF',pt:'PT',
+                    CT:'CT',HG:'HG',MA:'MA',DSF:'DSF',PT:'PT'};
+function normPW(pw) { return PW_KEY_MAP[pw] || PW_KEY_MAP[(pw||'ct').toLowerCase()] || 'CT'; }
+
 function lookupScalar(h0, cf, pw, yr) {
   if(!DB) return {peak:7.88,btm:0.63,co2:2000};
-  const h0n=nearest(DB.meta.h0_vals,h0),
+  const key=normPW(pw),
+        h0n=nearest(DB.meta.h0_vals,h0),
         cfn=nearest(DB.meta.cf_vals,cf),
         yrn=nearest(DB.meta.years,yr);
-  return DB.scalar.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw&&r.yr===yrn)
-      || DB.scalar.find(r=>r.pw===pw&&r.yr===yrn)
+  return DB.scalar.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===key&&r.yr===yrn)
+      || DB.scalar.find(r=>r.pw===key&&r.yr===yrn)
       || DB.scalar[0];
 }
 function lookupTraj(h0, cf, pw) {
   if(!DB) return Array(21).fill(7.88);
-  const h0n=nearest([4,6.6,8,10,14,20],h0),
+  const key=normPW(pw),
+        h0n=nearest([4,6.6,8,10,14,20],h0),
         cfn=nearest([0.60,0.75,0.85],cf);
-  return (DB.trajectory.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===pw)
-       || DB.trajectory.find(r=>r.pw===pw)).traj;
+  return (DB.trajectory.find(r=>r.h0===h0n&&r.cf===cfn&&r.pw===key)
+       || DB.trajectory.find(r=>r.pw===key)
+       || DB.trajectory[0]).traj;
 }
 function ringPeak(p, pw, yr) {
   const row = lookupScalar(p.h0, p.cf, (pw||'ct').toUpperCase(), yr||0);
